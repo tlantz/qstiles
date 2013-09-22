@@ -51,9 +51,14 @@ qpushd source/Irrlicht
 make -j8
 qpopd
 
+qpushd examples
+make -j8
+qpopd
+
 log INFO "installing irrlicht build in ${target_dir}"
 target_inc=${target_dir}/include
 target_lib=${target_dir}/lib
+target_bin=${target_dir}/bin
 if [[ ! -d ${target_inc} ]]; then
     mkdir -p ${target_inc}
 fi
@@ -65,6 +70,12 @@ if [[ ! -d ${target_lib} ]]; then
 fi
 rm -rf ${target_lib}/*
 cp lib/Linux/* ${target_lib}
+
+if [[ ! -d ${target_bin} ]]; then
+    mkdir -p ${target_bin}
+fi
+rm -rf ${target_bin}/*
+cp lib/Linux/* ${target_bin}
 
 qpopd
 qpopd
