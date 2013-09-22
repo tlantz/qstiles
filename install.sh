@@ -18,7 +18,7 @@ function qpopd()
 
 if [[ 2 > $#* ]]; then
     echo "error: not enough arguments"
-    echo "Usage: $0 <target> [irrlicht_version]"
+    echo "Usage: $0 <target> [irrlicht version]"
     exit 1
 fi
 
