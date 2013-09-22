@@ -30,19 +30,24 @@ if [[ -z ${irrlicht_version} ]]; then
     irrlicht_version=1.8
 fi
 irrlicht_url=http://downloads.sourceforge.net/irrlicht/irrlicht-${irrlicht_version}.zip
+bld_dir=bld/env
+irrlicht_arc=irrlicht-${irrlicht_version}.zip
 
-log INFO "downloading irrlicht source package"
-mkdir tmp
-qpushd tmp
-wget ${irrlicht_url}
+log INFO "downloading irrlicht source package from ${irrlicht_url}"
+mkdir -p ${bld_dir}
+qpushd ${bld_dir}
+if [[ ! -e ${irrlicht_arc} ]]; then
+    wget ${irrlicht_url} -o ${irrlicht_arc}
+fi
 
-log INFO "unpacking irrlicht source package"
+log INFO "unpacking irrlicht source package ${irrlicht_arc}"
 
-unzip irrlicht-${irrlicht_version}.zip
+unzip ${irrlicht_arc}
 
 log INFO "building irrlicht source"
 
-qpushd irrlicht-${irrlicht_version}/source/Irrlicht
+qpushd `basename ${irrlicht_arc} .zip`
+qpushd source/Irrlicht
 make -j8
 qpopd
 
@@ -59,10 +64,7 @@ if [[ ! -d ${target_lib} ]]; then
     mkdir -p ${target_lib} 
 fi
 rm -rf ${target_lib}/*
-cp source/Irrlicht/libIrrlicht.a ${target_lib}
+cp lib/Linux/* ${target_lib}
 
 qpopd
-
 qpopd
-log INFO "cleaning up tmp contents"
-rm -rf tmp
