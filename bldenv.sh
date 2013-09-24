@@ -37,16 +37,18 @@ log INFO "downloading irrlicht source package from ${irrlicht_url}"
 mkdir -p ${bld_dir}
 qpushd ${bld_dir}
 if [[ ! -e ${irrlicht_arc} ]]; then
-    wget ${irrlicht_url} -o ${irrlicht_arc}
+    wget ${irrlicht_url}
 fi
 
 log INFO "unpacking irrlicht source package ${irrlicht_arc}"
 
+ls
 unzip ${irrlicht_arc}
 
 log INFO "building irrlicht source"
 
-qpushd `basename ${irrlicht_arc} .zip`
+irrlicht_dir=`basename ${irrlicht_arc} .zip`
+qpushd ${irrlicht_dir}
 qpushd source/Irrlicht
 make -j8
 qpopd
