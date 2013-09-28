@@ -77,7 +77,7 @@ if [[ ! -d ${target_bin} ]]; then
     mkdir -p ${target_bin}
 fi
 rm -rf ${target_bin}/*
-cp lib/Linux/* ${target_bin}
+cp bin/Linux/* ${target_bin}
 
 qpopd
 qpopd
