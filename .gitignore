@@ -1,2 +1,8 @@
 bld/*
 bin/*
+obj/*
+*/ipch/*
+ipch/*
+*.*sdf
+*.suo
+*.vcxproj.filters

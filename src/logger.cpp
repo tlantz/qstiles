@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include <moster/logger.hpp>
 #include <cstring>
 #include <cstdio>
@@ -12,9 +13,15 @@ namespace moster
         const char * timestamp(char * buffer)
         {
             time_t t = time(NULL);
-            struct tm m;
-            localtime_r(&t, &m);
-            strftime(buffer, MOSTER_LOGGER_BUFFSIZE, "%d%b%y %H:%M:%S", &m);
+			struct tm * mptr;
+            
+#ifdef _MSC_VER
+			mptr = localtime(&t);
+#else
+			struct tm m;
+            mptr = localtime_r(&t, &m);
+#endif
+            strftime(buffer, MOSTER_LOGGER_BUFFSIZE, "%d%b%y %H:%M:%S", mptr);
             return buffer;
         }
 

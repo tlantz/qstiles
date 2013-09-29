@@ -1,3 +1,6 @@
+#ifndef MOSTER_LOGGER_HPP_
+#define MOSTER_LOGGER_HPP_
+
 #ifndef MOSTER_LOGGER_MAXNAME_LEN
     #define MOSTER_LOGGER_MAXNAME_LEN 32
 #endif
@@ -39,3 +42,4 @@ namespace moster
 
 }
 
+#endif
