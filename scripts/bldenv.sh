@@ -30,7 +30,7 @@ if [[ -z ${irrlicht_version} ]]; then
     irrlicht_version=1.8
 fi
 irrlicht_url=http://downloads.sourceforge.net/irrlicht/irrlicht-${irrlicht_version}.zip
-bld_dir=bld/env
+bld_dir=../bld/env
 irrlicht_arc=irrlicht-${irrlicht_version}.zip
 
 log INFO "downloading irrlicht source package from ${irrlicht_url}"

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <moster/logger.hpp>
 #include <irrlicht.h>
 
