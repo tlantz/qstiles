@@ -16,3 +16,4 @@ src/stamp-h1
 src/configure.ac
 src/makefile.in
 src/config.h
+*.o
