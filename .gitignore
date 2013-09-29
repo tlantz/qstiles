@@ -14,3 +14,5 @@ src/autom4te.cache
 src/autoscan.log
 src/stamp-h1
 src/configure.ac
+src/makefile.in
+src/config.h
