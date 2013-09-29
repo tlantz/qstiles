@@ -9,3 +9,8 @@ ipch/*
 src/makefile
 src/config.status
 src/config.log
+src/.deps
+src/autom4te.cache
+src/autoscan.log
+src/stamp-h1
+src/configure.ac

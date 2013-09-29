@@ -1,0 +1,2 @@
+bin_PROGRAMS=moster
+moster_SOURCES=logger.cpp main.cpp

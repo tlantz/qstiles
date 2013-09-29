@@ -1,4 +1,5 @@
 #include <moster/logger.hpp>
+#include "config.h"
 #include <cstring>
 #include <cstdio>
 #include <cstdarg>
