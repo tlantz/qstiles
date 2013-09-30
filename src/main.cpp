@@ -6,6 +6,7 @@
 #endif
 
 typedef irr::core::vector3df vec3df;
+typedef irr::video::SColor color;
 
 class keyhandler : public irr::IEventReceiver
 {
@@ -13,18 +14,20 @@ class keyhandler : public irr::IEventReceiver
 private:
 
 	bool is_in_debug_mode_;
+	irr::scene::ICameraSceneNode * camera_;
 
 public:
 
-	explicit keyhandler();
+	explicit keyhandler(irr::scene::ICameraSceneNode * camera);
 
 	bool OnEvent(const irr::SEvent & event);
 };
 
-keyhandler::keyhandler() : 
+keyhandler::keyhandler(irr::scene::ICameraSceneNode * camera) : 
+	camera_(camera),
 	is_in_debug_mode_(false)
 { }
-
+ 
 bool keyhandler::OnEvent(const irr::SEvent & event)
 {
 	if (irr::EET_KEY_INPUT_EVENT == event.EventType)
@@ -60,8 +63,6 @@ int main(int argc, char ** argv)
 		return 1; 
 	}
 	device->setWindowCaption(L"moster");
-	keyhandler key_handler;
-	device->setEventReceiver(&key_handler);
 
 	// setup video driver
 	auto vdrv = device->getVideoDriver();
@@ -73,6 +74,9 @@ int main(int argc, char ** argv)
 	cam->setPosition(vec3df(0.0f, 3000.0f, 0.0f));
 	cam->setTarget(vec3df(0.0f, 0.0f, 0.0f));
 	cam->setFarValue(100.0f);
+	keyhandler key_handler(cam);
+	device->setEventReceiver(&key_handler);
+
 
 	auto terrain = smgr->addTerrainSceneNode(
 		"../../assets/heightmap/grass1-height.png",
@@ -81,7 +85,7 @@ int main(int argc, char ** argv)
 		vec3df(0.0f, 0.0f, 0.0f),
 		vec3df(0.0f, 0.0f, 0.0f),
 		vec3df(100.0f, 5.0f, 100.0f),
-		irr::video::SColor(255, 255, 0, 0),
+		color(255, 255, 0, 0),
 		2,
 		irr::scene::ETPS_9,
 		4
@@ -91,12 +95,17 @@ int main(int argc, char ** argv)
 	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, true);
 	terrain->setMaterialTexture(0, cmap);
 	terrain->scaleTexture(1.0, 0.0);
-
 	while (device->run())
 	{
-		logger.log(moster::logger::Info, "the time is %d",
-			device->getTimer()->getTime());
-		vdrv->beginScene(true, false);
+		auto fps = vdrv->getFPS();
+		logger.log(
+			moster::logger::Info, 
+			"the time is %d, fps is %d",
+			device->getTimer()->getTime(),
+			fps
+		);
+		vdrv->beginScene(true, true);
+		
 		vdrv->endScene();
 	}
 
