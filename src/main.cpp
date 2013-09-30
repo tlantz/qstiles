@@ -5,6 +5,8 @@
 #include <tchar.h>
 #endif
 
+typedef irr::core::vector3df vec3df;
+
 class keyhandler : public irr::IEventReceiver
 {
 
@@ -68,22 +70,27 @@ int main(int argc, char ** argv)
 	auto smgr = device->getSceneManager();
 	auto cam = smgr->addCameraSceneNode();
 
-	cam->setPosition(irr::core::vector3df(0.0f, 3000.0f, 0.0f));
-	cam->setTarget(irr::core::vector3df(0.0f, 0.0f, 0.0f));
+	cam->setPosition(vec3df(0.0f, 3000.0f, 0.0f));
+	cam->setTarget(vec3df(0.0f, 0.0f, 0.0f));
 	cam->setFarValue(100.0f);
 
-	smgr->addTerrainSceneNode(
+	auto terrain = smgr->addTerrainSceneNode(
 		"../../assets/heightmap/grass1-height.png",
 		NULL,
 		-1,
-		irr::core::vector3df(0.0f, 0.0f, 0.0f),
-		irr::core::vector3df(0.0f, 0.0f, 0.0f),
-		irr::core::vector3df(100.0f, 5.0f, 100.0f),
+		vec3df(0.0f, 0.0f, 0.0f),
+		vec3df(0.0f, 0.0f, 0.0f),
+		vec3df(100.0f, 5.0f, 100.0f),
 		irr::video::SColor(255, 255, 0, 0),
 		2,
 		irr::scene::ETPS_9,
 		4
 	);
+
+	auto cmap = vdrv->getTexture("../../assets/colormap/grass1-color.png");
+	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, true);
+	terrain->setMaterialTexture(0, cmap);
+	terrain->scaleTexture(1.0, 0.0);
 
 	while (device->run())
 	{
