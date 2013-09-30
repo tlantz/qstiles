@@ -1,5 +1,7 @@
 #include <moster/logger.hpp>
+#ifndef _MSC_VER
 #include "config.h"
+#endif
 #include <cstring>
 #include <cstdio>
 #include <cstdarg>
@@ -17,6 +19,10 @@ namespace moster
 #ifdef HAVE_LOCALTIME_R
             struct tm m;
             mptr = localtime_r(&t, &m);
+#elif _MSC_VER
+			struct tm m;
+			localtime_s(&m, &t);
+			mptr = &m;
 #else
             mptr = localtime(&t);
 #endif
@@ -44,8 +50,12 @@ namespace moster
 
     logger::logger(const char * name, const logger::log_level level) :
         level_(level)
-    { 
+    {
+#ifdef _MSC_VER
+		strncpy_s(name_, name, MOSTER_LOGGER_MAXNAME_LEN- 1);
+#else
         strncpy(name_, name, MOSTER_LOGGER_MAXNAME_LEN - 1);
+#endif
         name_[MOSTER_LOGGER_MAXNAME_LEN - 1] = '\0';
     }
 
