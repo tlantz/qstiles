@@ -15,3 +15,5 @@ src/autoscan.log
 src/stamp-h1
 src/makefile.in
 *.o
+
+*.vcxproj.user
