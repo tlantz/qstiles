@@ -1,6 +1,7 @@
 #include <moster/logger.hpp>
 #include <irrlicht.h>
 #include <driverChoice.h>
+#include <string>
 #ifdef _MSC_VER
 #include <tchar.h>
 #endif
@@ -19,7 +20,7 @@ private:
 	irr::scene::ICameraSceneNode * camera_;
 
 public:
-
+ 
 	explicit keyhandler(irr::scene::ICameraSceneNode * camera);
 
 	bool OnEvent(const irr::SEvent & event);
@@ -52,7 +53,8 @@ namespace moster { namespace os
 
 	char * makepath(char * dest, size_t max, const char * left, const char * right)
 	{
-		char * next = strncpy(dest, left, max);
+		strncpy_s(dest, max, left, strnlen_s(right, max));
+
 		*next = pathchar();
 		next++;
 		return strncpy(next, right, max - (next - left));
@@ -105,9 +107,11 @@ int main(int argc, char ** argv)
 	keyhandler key_handler(cam);
 	device->setEventReceiver(&key_handler);
 
-
+	char temp_path[128];
+	os::makepath(temp_path, 128, assets_path, "heightmap");
+	os::makepath(temp_path, 128, temp_path, "grass1-height.png");
 	auto terrain = smgr->addTerrainSceneNode(
-		"../../assets/heightmap/grass1-height.png",
+		temp_path,
 		NULL,
 		-1,
 		vec3df(0.0f, 0.0f, 0.0f),
@@ -119,7 +123,9 @@ int main(int argc, char ** argv)
 		4
 	);
 
-	auto cmap = vdrv->getTexture("../../asssets/colormap/grass1-color.png");
+	os::makepath(temp_path, 128, assets_path, "colormap");
+	os::makepath(temp_path, 128, temp_path, "grass1-color.png");
+	auto cmap = vdrv->getTexture(temp_path);
 	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, true);
 	terrain->setMaterialTexture(0, cmap);
 	terrain->scaleTexture(1.0, 0.0);
