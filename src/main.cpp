@@ -8,6 +8,8 @@
 typedef irr::core::vector3df vec3df;
 typedef irr::video::SColor color;
 
+using namespace moster;
+
 class keyhandler : public irr::IEventReceiver
 {
 
@@ -37,14 +39,40 @@ bool keyhandler::OnEvent(const irr::SEvent & event)
 	return false;
 }
 
-#ifdef _MSC_VER
-int _tmain(int argc, _TCHAR* argv[])
-#else
-int main(int argc, char ** argv)
-#endif
+namespace moster { namespace os 
 {
-    moster::logger logger("main", moster::logger::Info);
-	logger.log(moster::logger::Info, "hello...");
+
+	char * makepath(char * dest, size_t max, const char * left, const char * right);
+
+#ifdef WIN32
+	char pathchar() { return '\\'; }
+#else
+	char pathchar() { retur '/'; }
+#endif
+
+	char * makepath(char * dest, size_t max, const char * left, const char * right)
+	{
+		char * next = strncpy(dest, left, max);
+		*next = pathchar();
+		next++;
+		return strncpy(next, right, max - (next - left));
+	}
+
+} }
+
+int main(int argc, char ** argv)
+{
+	logger logger("main", logger::Info);
+	logger.log(logger::Info, "hello...");
+
+	if (1 > argc)
+	{
+		logger.log(logger::Error, "not enough arguments");
+		return 1;
+	}
+	const char * assets_path = argv[0];
+	logger.log(logger::Info, "getting assets from %s", assets_path);
+
 	auto driverType = irr::driverChoiceConsole();
 	if (irr::video::EDT_COUNT == driverType)
 	{
@@ -91,7 +119,7 @@ int main(int argc, char ** argv)
 		4
 	);
 
-	auto cmap = vdrv->getTexture("../../assets/colormap/grass1-color.png");
+	auto cmap = vdrv->getTexture("../../asssets/colormap/grass1-color.png");
 	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, true);
 	terrain->setMaterialTexture(0, cmap);
 	terrain->scaleTexture(1.0, 0.0);
