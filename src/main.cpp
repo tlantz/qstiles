@@ -62,8 +62,6 @@ int main(int argc, char ** argv)
 	// setup device
 	irr::SIrrlichtCreationParameters params;
 	params.DriverType = driverType;
-	params.WindowSize = irr::core::dimension2d<irr::u32>(800, 600);
-	params.Fullscreen = false;
 	auto device = irr::createDeviceEx(params);
 	if (0 == device)
 	{
@@ -77,11 +75,16 @@ int main(int argc, char ** argv)
 
 	// setup scene graph
 	auto smgr = device->getSceneManager();
-	auto cam = smgr->addCameraSceneNode();
+	auto cam = smgr->addCameraSceneNode(
+		0, 
+		vec3df(0,30,-40), 
+		vec3df(0,5,0)
+	);
+	cam->setPosition(vec3df(-2000.0,10000.0,-2000.0));
+	cam->setTarget(vec3df(10000.0, 0.0, 10000.0));
+	cam->setFarValue(42000.0f);
 
-	cam->setPosition(vec3df(0.0f, 3000.0f, 0.0f));
-	cam->setTarget(vec3df(0.0f, 0.0f, 0.0f));
-	cam->setFarValue(100.0f);
+
 	keyhandler key_handler(cam);
 	device->setEventReceiver(&key_handler);
 
@@ -89,23 +92,24 @@ int main(int argc, char ** argv)
 		<< "grass1-height.png").str();
 	auto terrain = smgr->addTerrainSceneNode(
 		hmpath.c_str(),
-		NULL,
-		-1,
-		vec3df(0.0f, 0.0f, 0.0f),
-		vec3df(0.0f, 0.0f, 0.0f),
-		vec3df(100.0f, 5.0f, 100.0f),
-		color(255, 255, 0, 0),
-		2,
-		irr::scene::ETPS_9,
-		4
+		0,					
+		-1,					
+		vec3df(0.f, 0.f, 0.f),		
+		vec3df(0.f, 0.f, 0.f),
+		vec3df(100.f, 25.0f, 100.f),	
+		irr::video::SColor(255, 255, 255, 255),
+		5,
+		irr::scene::ETPS_17,
+		4	
 	);
 
-	auto cmpath = (assetpath(assets_path) << "heightmap"
-		<< "grass1-height.png").str();
+	auto cmpath = (assetpath(assets_path) << "colormap"
+		<< "grass1-color.png").str();
 	auto cmaptext = vdrv->getTexture(cmpath.c_str());
-	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, true);
+	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	terrain->setMaterialTexture(0, cmaptext);
-	terrain->scaleTexture(1.0, 0.0);
+	terrain->scaleTexture(1.0f, 1.0f);
+	terrain->setMaterialType(irr::video::EMT_SOLID);
 	while (device->run())
 	{
 		auto fps = vdrv->getFPS();
@@ -115,9 +119,12 @@ int main(int argc, char ** argv)
 			device->getTimer()->getTime(),
 			fps
 		);
-		vdrv->beginScene(true, true);
-		
-		vdrv->endScene();
+		if (device->isWindowActive())
+		{
+			vdrv->beginScene(true, true, irr::video::SColor(255, 64, 64, 64));
+			smgr->drawAll();
+			vdrv->endScene();
+		}
 	}
 
 	device->drop();
