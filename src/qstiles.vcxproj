@@ -85,9 +85,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\moster\assetpath.hpp" />
     <ClInclude Include="..\include\moster\logger.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="assetpath.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

@@ -1,7 +1,7 @@
 #include <moster/logger.hpp>
+#include <moster/assetpath.hpp>
 #include <irrlicht.h>
 #include <driverChoice.h>
-#include <string>
 #ifdef _MSC_VER
 #include <tchar.h>
 #endif
@@ -20,7 +20,7 @@ private:
 	irr::scene::ICameraSceneNode * camera_;
 
 public:
- 
+
 	explicit keyhandler(irr::scene::ICameraSceneNode * camera);
 
 	bool OnEvent(const irr::SEvent & event);
@@ -40,39 +40,17 @@ bool keyhandler::OnEvent(const irr::SEvent & event)
 	return false;
 }
 
-namespace moster { namespace os 
-{
-
-	char * makepath(char * dest, size_t max, const char * left, const char * right);
-
-#ifdef WIN32
-	char pathchar() { return '\\'; }
-#else
-	char pathchar() { retur '/'; }
-#endif
-
-	char * makepath(char * dest, size_t max, const char * left, const char * right)
-	{
-		strncpy_s(dest, max, left, strnlen_s(right, max));
-
-		*next = pathchar();
-		next++;
-		return strncpy(next, right, max - (next - left));
-	}
-
-} }
-
 int main(int argc, char ** argv)
 {
 	logger logger("main", logger::Info);
 	logger.log(logger::Info, "hello...");
 
-	if (1 > argc)
+	if (2 > argc)
 	{
 		logger.log(logger::Error, "not enough arguments");
 		return 1;
 	}
-	const char * assets_path = argv[0];
+	const char * assets_path = argv[1];
 	logger.log(logger::Info, "getting assets from %s", assets_path);
 
 	auto driverType = irr::driverChoiceConsole();
@@ -107,11 +85,10 @@ int main(int argc, char ** argv)
 	keyhandler key_handler(cam);
 	device->setEventReceiver(&key_handler);
 
-	char temp_path[128];
-	os::makepath(temp_path, 128, assets_path, "heightmap");
-	os::makepath(temp_path, 128, temp_path, "grass1-height.png");
+	auto hmpath = (assetpath(assets_path) << "heightmap"
+		<< "grass1-height.png").str();
 	auto terrain = smgr->addTerrainSceneNode(
-		temp_path,
+		hmpath.c_str(),
 		NULL,
 		-1,
 		vec3df(0.0f, 0.0f, 0.0f),
@@ -123,11 +100,11 @@ int main(int argc, char ** argv)
 		4
 	);
 
-	os::makepath(temp_path, 128, assets_path, "colormap");
-	os::makepath(temp_path, 128, temp_path, "grass1-color.png");
-	auto cmap = vdrv->getTexture(temp_path);
+	auto cmpath = (assetpath(assets_path) << "heightmap"
+		<< "grass1-height.png").str();
+	auto cmaptext = vdrv->getTexture(cmpath.c_str());
 	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, true);
-	terrain->setMaterialTexture(0, cmap);
+	terrain->setMaterialTexture(0, cmaptext);
 	terrain->scaleTexture(1.0, 0.0);
 	while (device->run())
 	{
