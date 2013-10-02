@@ -35,7 +35,19 @@ bool keyhandler::OnEvent(const irr::SEvent & event)
 {
 	if (irr::EET_KEY_INPUT_EVENT == event.EventType)
 	{
-		// TODO
+		auto oldpos = camera_->getPosition();
+		auto oldlookat = camera_->getTarget();
+		switch (event.KeyInput.Key)
+		{
+			case irr::KEY_KEY_W:
+				camera_->setPosition(oldpos + vec3df(0.0, 0.0, 50.0));
+				camera_->setTarget(oldlookat + vec3df(0.0, 0.0, 50.0));
+				break;
+			case irr::KEY_KEY_S:
+				camera_->setPosition(oldpos + vec3df(0.0, 0.0, -50.0));
+				camera_->setTarget(oldlookat + vec3df(0.0, 0.0, -50.0));
+				break;
+		}
 	}
 	return false;
 }
@@ -82,8 +94,7 @@ int main(int argc, char ** argv)
 	);
 	cam->setPosition(vec3df(-2000.0,10000.0,-2000.0));
 	cam->setTarget(vec3df(10000.0, 0.0, 10000.0));
-	cam->setFarValue(42000.0f);
-
+	cam->setFarValue(60000.0f);
 
 	keyhandler key_handler(cam);
 	device->setEventReceiver(&key_handler);
