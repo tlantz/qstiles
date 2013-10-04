@@ -2,14 +2,14 @@
 
 namespace moster
 {
-	assetpath::assetpath(const std::string & root)
+	assetpath::assetpath(const os::string & root)
 	{
 		if (root.empty())
 		{
 #ifdef WIN32
-			path_ << ".\\";
+			path_ << L".\\";
 #else
-			path_ << "./";
+			path_ << L"./";
 #endif
 		}
 		else
@@ -18,7 +18,7 @@ namespace moster
 		}
 	}
 
-	assetpath & assetpath::operator<<(const std::string & part)
+	assetpath & assetpath::operator<<(const os::string & part)
 	{
 #ifdef WIN32
 		path_ << '\\' << part;
@@ -28,7 +28,7 @@ namespace moster
 		return *this;
 	}
 
-	std::string assetpath::str() const
+	os::string assetpath::str() const
 	{
 		return path_.str();
 	}

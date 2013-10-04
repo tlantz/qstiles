@@ -1,10 +1,6 @@
-#include <moster/logger.hpp>
-#include <moster/assetpath.hpp>
+#include <moster/core.hpp>
 #include <irrlicht.h>
 #include <driverChoice.h>
-#ifdef _MSC_VER
-#include <tchar.h>
-#endif
 
 typedef irr::core::vector3df vec3df;
 typedef irr::video::SColor color;
@@ -49,21 +45,22 @@ bool keyhandler::OnEvent(const irr::SEvent & event)
 				break;
 		}
 	}
-	return false;
+	return false; 
 }
 
 int main(int argc, char ** argv)
 {
-	logger logger("main", logger::Info);
-	logger.log(logger::Info, "hello...");
-
+	logger logger(L"main", logger::Info);
+	logger.log(logger::Info, L"hello...");
+	
 	if (2 > argc)
 	{
-		logger.log(logger::Error, "not enough arguments");
+		logger.log(logger::Error, L"not enough arguments");
 		return 1;
 	}
-	const char * assets_path = argv[1];
-	logger.log(logger::Info, "getting assets from %s", assets_path);
+	os::oschar assets_path[128];
+	os::mbstowcs(assets_path, 128, argv[1], strlen(argv[1]));
+	logger.log(logger::Info, L"getting assets from %s", assets_path);
 
 	auto driverType = irr::driverChoiceConsole();
 	if (irr::video::EDT_COUNT == driverType)
@@ -74,10 +71,11 @@ int main(int argc, char ** argv)
 	// setup device
 	irr::SIrrlichtCreationParameters params;
 	params.DriverType = driverType;
+	params.AntiAlias = 3;
 	auto device = irr::createDeviceEx(params);
 	if (0 == device)
 	{
-		logger.log(moster::logger::Error, "unable to create device for driver %d", driverType);
+		logger.log(moster::logger::Error, L"unable to create device for driver %d", driverType);
 		return 1; 
 	}
 	device->setWindowCaption(L"moster");
@@ -98,9 +96,9 @@ int main(int argc, char ** argv)
 
 	keyhandler key_handler(cam);
 	device->setEventReceiver(&key_handler);
-
-	auto hmpath = (assetpath(assets_path) << "heightmap"
-		<< "grass1-height.png").str();
+	
+	auto hmpath = (assetpath(assets_path) << L"heightmap"
+		<< L"grass1-height.png").str();
 	auto terrain = smgr->addTerrainSceneNode(
 		hmpath.c_str(),
 		0,					
@@ -114,24 +112,24 @@ int main(int argc, char ** argv)
 		4	
 	);
 
-	auto cmpath = (assetpath(assets_path) << "colormap"
-		<< "grass1-color.png").str();
+	auto cmpath = (assetpath(assets_path) << L"colormap"
+		<< L"grass1-color.png").str();
 	auto cmaptext = vdrv->getTexture(cmpath.c_str());
 	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	terrain->setMaterialTexture(0, cmaptext);
+	terrain->setMaterialTexture(1, cmaptext);
 	terrain->scaleTexture(1.0f, 1.0f);
-	terrain->setMaterialType(irr::video::EMT_SOLID);
+	terrain->setMaterialType(irr::video::EMT_DETAIL_MAP);
+	
+	const size_t wincapsz = 64;
+	os::oschar wincap[wincapsz];
 	while (device->run())
 	{
-		auto fps = vdrv->getFPS();
-		logger.log(
-			moster::logger::Info, 
-			"the time is %d, fps is %d",
-			device->getTimer()->getTime(),
-			fps
-		);
 		if (device->isWindowActive())
 		{
+			auto fps = vdrv->getFPS();
+			os::wsprintf(wincap, wincapsz, L"moster (%d fps)", fps);
+			device->setWindowCaption(L"moster");
 			vdrv->beginScene(true, true, irr::video::SColor(255, 64, 64, 64));
 			smgr->drawAll();
 			vdrv->endScene();
