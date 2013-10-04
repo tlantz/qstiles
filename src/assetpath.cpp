@@ -6,11 +6,7 @@ namespace moster
 	{
 		if (root.empty())
 		{
-#ifdef WIN32
-			path_ << L".\\";
-#else
-			path_ << L"./";
-#endif
+			path_ << os::pathsep();
 		}
 		else
 		{
@@ -20,11 +16,7 @@ namespace moster
 
 	assetpath & assetpath::operator<<(const os::string & part)
 	{
-#ifdef WIN32
-		path_ << '\\' << part;
-#else
-		path_ << '/' << part;
-#endif
+		path_ << os::pathsep() << part;
 		return *this;
 	}
 

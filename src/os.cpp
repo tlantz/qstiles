@@ -4,6 +4,25 @@
 
 namespace moster { namespace os 
 {
+
+	const char * pathsep()
+	{
+#ifdef WIN32
+		return "\\";
+#else
+		return "/";
+#endif
+	}
+
+	const osstr wpathsep()
+	{
+#ifdef WIN32
+		return L"\\";
+#else
+		return L"/";
+#endif
+	}
+
 	size_t strlen(const char * str)
 	{
 		return ::strlen(str);

@@ -5,11 +5,14 @@
 
 namespace moster { namespace os
 {
-
 	typedef wchar_t oschar;
 	typedef wchar_t * osstr;
 	typedef std::wstring string;
 	typedef std::wstringstream stringstream;
+
+	const char * pathsep();
+
+	const osstr wpathsep();
 	
 	size_t mbstowcs(osstr dest, size_t destsz, const char * src, size_t srcsize);
 
