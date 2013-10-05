@@ -7,46 +7,206 @@ typedef irr::video::SColor color;
 
 using namespace moster;
 
-class keyhandler : public irr::IEventReceiver
+namespace moster { namespace irrlicht
 {
-
-private:
-
-	bool is_in_debug_mode_;
-	irr::scene::ICameraSceneNode * camera_;
-
-public:
-
-	explicit keyhandler(irr::scene::ICameraSceneNode * camera);
-
-	bool OnEvent(const irr::SEvent & event);
-};
-
-keyhandler::keyhandler(irr::scene::ICameraSceneNode * camera) : 
-	camera_(camera),
-	is_in_debug_mode_(false)
-{ }
- 
-bool keyhandler::OnEvent(const irr::SEvent & event)
-{
-	if (irr::EET_KEY_INPUT_EVENT == event.EventType)
+	class spincam
 	{
-		auto oldpos = camera_->getPosition();
-		auto oldlookat = camera_->getTarget();
-		switch (event.KeyInput.Key)
+	private:
+
+		class controller
 		{
-			case irr::KEY_KEY_W:
-				camera_->setPosition(oldpos + vec3df(0.0, 0.0, 50.0));
-				camera_->setTarget(oldlookat + vec3df(0.0, 0.0, 50.0));
-				break;
-			case irr::KEY_KEY_S:
-				camera_->setPosition(oldpos + vec3df(0.0, 0.0, -50.0));
-				camera_->setTarget(oldlookat + vec3df(0.0, 0.0, -50.0));
-				break;
+		private:
+
+			int cmodifier_mask_;
+			int modifier_mask_;
+
+		public:
+
+			controller();
+
+			enum cmodifier
+			{
+				MD_CNONE =		0x0000,
+				MD_BACKWARD =	0x0001,
+				MD_SPINRIGHT =	0x0002,
+				MD_ZOOMOUT =	0x0004
+			};
+
+			enum modifier
+			{
+				MD_NONE =		0x0000,
+				MD_FORWARD =	0x0001,
+				MD_SPINLEFT =	0x0002,
+				MD_ZOOMIN =		0x0004
+			};
+
+			void clear();
+
+			void clear(cmodifier modifier);
+
+			void clear(modifier modifier);
+
+			bool is_active(modifier modifier) const;
+
+			bool is_active(cmodifier modifier) const;
+
+			void set(cmodifier modifier);
+
+			void set(modifier modifier);
+
+		};
+
+	public:
+
+		class receiver : public irr::IEventReceiver
+		{
+		private:
+
+			controller & controller_;
+
+		public:
+
+			receiver(controller & controller);
+
+			bool OnEvent(const irr::SEvent & event);
+		};
+		
+	private:
+
+		::irr::scene::ICameraSceneNode * camera_;
+		controller controller_;
+		receiver receiver_;
+		const vec3df slide_;
+		const vec3df spin_;
+
+	public:
+
+		spincam(irr::scene::ICameraSceneNode * camera);
+
+		receiver & key_receiver();
+
+		void update(const unsigned int time_delta_msec);
+		
+	};
+
+	spincam::spincam(irr::scene::ICameraSceneNode * camera) :
+		camera_(camera),
+		slide_(50.0f, 0.0f, 50.0f),
+		spin_(96.0f, 0.0f, -96.0f),
+		controller_(),
+		receiver_(this->controller_)
+	{ }
+
+	spincam::receiver & spincam::key_receiver()
+	{
+		return receiver_;
+	}
+
+	void spincam::update(const unsigned int time_delta_msec)
+	{
+		if (controller_.is_active(controller::modifier::MD_FORWARD))
+		{
+			camera_->setPosition(camera_->getPosition() + slide_);
+			camera_->setTarget(camera_->getTarget() + slide_);
+		}
+		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
+		{
+			camera_->setPosition(camera_->getPosition() - slide_);
+			camera_->setTarget(camera_->getTarget() - slide_);
+		}
+		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
+		{
+			camera_->setTarget(camera_->getTarget() - spin_);
+		}
+		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
+		{
+			camera_->setTarget(camera_->getTarget() + spin_);
 		}
 	}
-	return false; 
-}
+
+	void spincam::controller::clear()
+	{
+		modifier_mask_ = 0;
+		cmodifier_mask_ = 0;
+	}
+
+	void spincam::controller::clear(spincam::controller::cmodifier modifier)
+	{
+		cmodifier_mask_ &= (~modifier);
+	}
+
+	void spincam::controller::clear(spincam::controller::modifier modifier)
+	{
+		modifier_mask_ &= (~modifier);
+	}
+
+	bool spincam::controller::is_active(spincam::controller::cmodifier modifier) const
+	{
+		return 0 != (modifier & cmodifier_mask_)
+			&& 0 == (modifier & modifier_mask_);
+	}
+
+	bool spincam::controller::is_active(spincam::controller::modifier modifier) const
+	{
+		return 0 != (modifier & modifier_mask_) 
+			&& 0 == (modifier & cmodifier_mask_);
+	}
+
+	void spincam::controller::set(spincam::controller::cmodifier modifier)
+	{
+		cmodifier_mask_ |= modifier;
+	}
+
+	void spincam::controller::set(spincam::controller::modifier modifier)
+	{
+		modifier_mask_ |= modifier;
+	}
+
+	spincam::receiver::receiver(spincam::controller & controller) :
+		controller_(controller)
+	{ }
+
+	bool spincam::receiver::OnEvent(const irr::SEvent & event)
+	{
+		if (irr::EET_KEY_INPUT_EVENT == event.EventType)
+		{
+			spincam::controller::modifier m = spincam::controller::modifier::MD_NONE;
+			spincam::controller::cmodifier cm = spincam::controller::cmodifier::MD_CNONE;
+			switch (event.KeyInput.Key)
+			{
+				case irr::KEY_KEY_W:
+					m = spincam::controller::modifier::MD_FORWARD;
+					break;
+				case irr::KEY_KEY_S:
+					cm = spincam::controller::cmodifier::MD_BACKWARD;
+					break;
+				case irr::KEY_KEY_A:
+					m = spincam::controller::modifier::MD_SPINLEFT;
+					break;
+				case irr::KEY_KEY_D:
+					cm = spincam::controller::cmodifier::MD_SPINRIGHT;
+					break;
+				case irr::KEY_KEY_C:
+					m = spincam::controller::modifier::MD_ZOOMIN;
+					break;
+				case irr::KEY_KEY_V:
+					cm = spincam::controller::cmodifier::MD_ZOOMOUT;
+					break;
+			}
+			if (event.KeyInput.PressedDown)
+			{
+				controller_.set(m);
+				controller_.set(cm);
+			}
+			else
+			{
+				controller_.clear(m);
+				controller_.clear(cm);
+			}
+		}
+		return false;
+	}
+} }
 
 int main(int argc, char ** argv)
 {
@@ -94,8 +254,8 @@ int main(int argc, char ** argv)
 	cam->setTarget(vec3df(10000.0, 0.0, 10000.0));
 	cam->setFarValue(60000.0f);
 
-	keyhandler key_handler(cam);
-	device->setEventReceiver(&key_handler);
+	irrlicht::spincam spincam(cam);
+	device->setEventReceiver(&(spincam.key_receiver()));
 	
 	auto hmpath = (assetpath(assets_path) << L"heightmap"
 		<< L"grass1-height.png").str();
