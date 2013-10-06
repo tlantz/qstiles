@@ -22,8 +22,6 @@ namespace moster { namespace irrlicht
 
 		public:
 
-			controller();
-
 			enum cmodifier
 			{
 				MD_CNONE =		0x0000,
