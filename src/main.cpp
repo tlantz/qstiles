@@ -73,7 +73,8 @@ namespace moster { namespace irrlicht
 		
 	private:
 
-		::irr::scene::ICameraSceneNode * camera_;
+		irr::f32 angle_;
+		irr::scene::ICameraSceneNode * camera_;
 		controller controller_;
 		receiver receiver_;
 		const vec3df slide_;
@@ -90,6 +91,7 @@ namespace moster { namespace irrlicht
 	};
 
 	spincam::spincam(irr::scene::ICameraSceneNode * camera) :
+		angle_(0.0f),
 		camera_(camera),
 		slide_(50.0f, 0.0f, 50.0f),
 		spin_(96.0f, 0.0f, -96.0f),
@@ -236,7 +238,6 @@ int main(int argc, char ** argv)
 	// setup device
 	irr::SIrrlichtCreationParameters params;
 	params.DriverType = driverType;
-	params.AntiAlias = 3;
 	auto device = irr::createDeviceEx(params);
 	if (0 == device)
 	{
