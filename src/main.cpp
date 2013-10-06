@@ -38,6 +38,8 @@ namespace moster { namespace irrlicht
 				MD_ZOOMIN =		0x0004
 			};
 
+			controller();
+
 			void clear();
 
 			void clear(cmodifier modifier);
@@ -121,6 +123,11 @@ namespace moster { namespace irrlicht
 			camera_->setTarget(camera_->getTarget() + spin_);
 		}
 	}
+
+	spincam::controller::controller() :
+		cmodifier_mask_(0),
+		modifier_mask_(0)
+	{ }
 
 	void spincam::controller::clear()
 	{
@@ -281,16 +288,21 @@ int main(int argc, char ** argv)
 	
 	const size_t wincapsz = 64;
 	os::oschar wincap[wincapsz];
+	auto last_time = device->getTimer()->getTime();
 	while (device->run())
 	{
 		if (device->isWindowActive())
 		{
 			auto fps = vdrv->getFPS();
+			auto t = device->getTimer()->getTime();
+			auto tdiff = t - last_time;
 			os::wsprintf(wincap, wincapsz, L"moster (%d fps)", fps);
 			device->setWindowCaption(L"moster");
+			spincam.update(tdiff);
 			vdrv->beginScene(true, true, irr::video::SColor(255, 64, 64, 64));
 			smgr->drawAll();
 			vdrv->endScene();
+			last_time = t;
 		}
 	}
 
