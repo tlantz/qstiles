@@ -74,17 +74,18 @@ namespace moster { namespace irrlicht
 		
 	private:
 
-		irr::f32 angle_;
+		f32 angle_;
 		irr::scene::ICameraSceneNode * camera_;
 		controller controller_;
-		irr::f32 height_;
-		irr::f32 look_distance_;
+		f32 height_;
+		f32 look_distance_;
 		receiver receiver_;
-		const float spin_;
+		const f32 spin_;
+		const f32 track_speed_;
 
 	public:
 
-		spincam(irr::scene::ICameraSceneNode * camera);
+		spincam(irr::scene::ICameraSceneNode * camera, f32 track_speed = 10.0f);
 
 		receiver & key_receiver();
 
@@ -92,18 +93,19 @@ namespace moster { namespace irrlicht
 		
 	};
 
-	spincam::spincam(irr::scene::ICameraSceneNode * camera) :
+	spincam::spincam(irr::scene::ICameraSceneNode * camera, 
+			f32 track_speed) :
 		angle_(0.0f),
 		camera_(camera),
 		controller_(),
-		height_(10000.0f),
-		look_distance_(10000.0f),
+		height_(15000.0f),
+		look_distance_(200.0f),
 		receiver_(this->controller_),
-		spin_(0.25f)
+		spin_(0.25f),
+		track_speed_(track_speed)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
-		camera_->setTarget(vec3df(0.0f, 0.0f, look_distance_));
-		camera_->bindTargetAndRotation(true);
+		camera_->setTarget(vec3df(look_distance_, 0.0f, look_distance_));
 	}
 
 	spincam::receiver & spincam::key_receiver()
@@ -113,32 +115,34 @@ namespace moster { namespace irrlicht
 
 	void spincam::update(const unsigned int time_delta_msec)
 	{
-		const float ft = static_cast<float>(time_delta_msec);
+		const auto ft = static_cast<float>(time_delta_msec);
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
+			const auto r = camera_->getRotation();
 			angle_ = angle_ - (spin_ * ft);
-			camera_->setRotation(vec3df(0.0f, angle_, 0.0f));
+			camera_->setRotation(vec3df(r.X, angle_, r.Z));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
 		{
+			const auto r = camera_->getRotation();
 			angle_ = angle_ + (spin_ * ft);
-			camera_->setRotation(vec3df(0.0f, angle_, 0.0f));
+			camera_->setRotation(vec3df(r.X, angle_, r.Z));
 		}
 		vec3df targetdir = (camera_->getTarget() - camera_->getAbsolutePosition());
 		targetdir.normalize();
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				+ (50.0f * targetdir));
+				+ (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 			camera_->setTarget(camera_->getTarget() 
-				+ (50.0f * targetdir));
+				+ (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				- (50.0f * targetdir));
+				- (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 			camera_->setTarget(camera_->getTarget() 
-				- (50.0f * targetdir));
+				- (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 		}
 	}
 
@@ -286,10 +290,10 @@ int main(int argc, char ** argv)
 	auto terrain = smgr->addTerrainSceneNode(
 		hmpath.c_str(),
 		0,					
-		-1,					
-		vec3df(0.f, 0.f, 0.f),		
+		-1,
+		vec3df(-0.5f, 0.f, -0.5f),		
 		vec3df(0.f, 0.f, 0.f),
-		vec3df(100.f, 25.0f, 100.f),	
+		vec3df(1.0f, 0.25f, 1.0f),	
 		irr::video::SColor(255, 255, 255, 255),
 		5,
 		irr::scene::ETPS_17,
