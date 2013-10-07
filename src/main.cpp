@@ -76,6 +76,8 @@ namespace moster { namespace irrlicht
 		irr::f32 angle_;
 		irr::scene::ICameraSceneNode * camera_;
 		controller controller_;
+		irr::f32 height_;
+		irr::f32 look_distance_;
 		receiver receiver_;
 		const vec3df slide_;
 		const vec3df spin_;
@@ -93,11 +95,17 @@ namespace moster { namespace irrlicht
 	spincam::spincam(irr::scene::ICameraSceneNode * camera) :
 		angle_(0.0f),
 		camera_(camera),
-		slide_(50.0f, 0.0f, 50.0f),
-		spin_(96.0f, 0.0f, -96.0f),
 		controller_(),
-		receiver_(this->controller_)
-	{ }
+		height_(10000.0f),
+		look_distance_(10000.0f),
+		receiver_(this->controller_),
+		slide_(50.0f, 0.0f, 0.0f),
+		spin_(0.0f, 0.05f, 0.0f)
+	{ 
+		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
+		camera_->setTarget(vec3df(look_distance_, 0.0f, 0.0f));
+		camera_->bindTargetAndRotation(true);
+	}
 
 	spincam::receiver & spincam::key_receiver()
 	{
@@ -106,6 +114,7 @@ namespace moster { namespace irrlicht
 
 	void spincam::update(const unsigned int time_delta_msec)
 	{
+		const float ft = static_cast<float>(time_delta_msec);
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
 			camera_->setPosition(camera_->getPosition() + slide_);
@@ -118,11 +127,11 @@ namespace moster { namespace irrlicht
 		}
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
-			camera_->setTarget(camera_->getTarget() - spin_);
+			camera_->setRotation(camera_->getRotation() - (spin_ * ft));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
 		{
-			camera_->setTarget(camera_->getTarget() + spin_);
+			camera_->setRotation(camera_->getRotation() + (spin_ * ft));
 		}
 	}
 
