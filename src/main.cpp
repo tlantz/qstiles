@@ -79,7 +79,6 @@ namespace moster { namespace irrlicht
 		irr::f32 height_;
 		irr::f32 look_distance_;
 		receiver receiver_;
-		const vec3df slide_;
 		const float spin_;
 
 	public:
@@ -99,11 +98,10 @@ namespace moster { namespace irrlicht
 		height_(10000.0f),
 		look_distance_(10000.0f),
 		receiver_(this->controller_),
-		slide_(50.0f, 0.0f, 0.0f),
 		spin_(0.25f)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
-		camera_->setTarget(vec3df(look_distance_, 0.0f, 0.0f));
+		camera_->setTarget(vec3df(0.0f, 0.0f, look_distance_));
 		camera_->bindTargetAndRotation(true);
 	}
 
@@ -115,26 +113,28 @@ namespace moster { namespace irrlicht
 	void spincam::update(const unsigned int time_delta_msec)
 	{
 		const float ft = static_cast<float>(time_delta_msec);
-		camera_->setRotation(vec3df(0.0f, 0.0f, 0.0f));
+		vec3df targetdir = camera_->getTarget() - camera_->getAbsolutePosition();
+		targetdir.normalize();
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
-			camera_->setPosition(camera_->getPosition() + slide_);
-			//camera_->setTarget(camera_->getTarget() + slide_);
+			camera_->setPosition(camera_->getPosition() 
+				+ (50.0f * targetdir));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
 		{
-			camera_->setPosition(camera_->getPosition() - slide_);
-			//camera_->setTarget(camera_->getTarget() - slide_);
+			camera_->setPosition(camera_->getPosition() 
+				- (50.0f * targetdir));
 		}
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
 			angle_ = angle_ - (spin_ * ft);
+			camera_->setRotation(vec3df(0.0f, angle_, 0.0f));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
 		{
 			angle_ = angle_ + (spin_ * ft);
+			camera_->setRotation(vec3df(0.0f, angle_, 0.0f));
 		}
-		camera_->setRotation(vec3df(0.0f, angle_, 0.0f));
 	}
 
 	spincam::controller::controller() :
@@ -262,13 +262,7 @@ int main(int argc, char ** argv)
 
 	// setup scene graph
 	auto smgr = device->getSceneManager();
-	auto cam = smgr->addCameraSceneNode(
-		0, 
-		vec3df(0,30,-40), 
-		vec3df(0,5,0)
-	);
-	cam->setPosition(vec3df(-2000.0,10000.0,-2000.0));
-	cam->setTarget(vec3df(10000.0, 0.0, 10000.0));
+	auto cam = smgr->addCameraSceneNode();
 	cam->setFarValue(60000.0f);
 
 	irrlicht::spincam spincam(cam);
