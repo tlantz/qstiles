@@ -1,6 +1,6 @@
 #ifndef MOSTER_ASSETPATH_HPP_
 #define MOSTER_ASSETPATH_HPP_
-#include <moster/os.hpp>
+#include <irrTypes.h>
 #include <sstream>
 
 namespace moster
@@ -10,15 +10,16 @@ namespace moster
 
 	private:
 
-		os::stringstream path_;
+		std::string buff_;
+		std::stringstream path_;
 
 	public:
 		
-		assetpath(const os::string & root = L"");
+		assetpath(const irr::fschar_t * root);
 
-		assetpath & operator<<(const os::string & part);
+		assetpath & operator<<(const irr::fschar_t * part);
 
-		os::string str() const;
+		const irr::fschar_t * c_str();
 
 	};
 }

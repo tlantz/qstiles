@@ -28,18 +28,18 @@ namespace moster
     private:
 
         log_level level_;
-        os::oschar name_[MOSTER_LOGGER_MAXNAME_LEN];
-		os::oschar buffer_[MOSTER_LOGGER_BUFFSIZE];
+        irr::c8 name_[MOSTER_LOGGER_MAXNAME_LEN];
+		irr::c8 buffer_[MOSTER_LOGGER_BUFFSIZE];
 
     public:
 
-		explicit logger(os::osstr name, const log_level = Info);
+		explicit logger(irr::c8 * name, const log_level = Info);
 
         const log_level level() const;
 
         void level(const log_level);
 
-		void log(const log_level, os::osstr format, ...);
+		void log(const log_level, irr::c8 * format, ...);
     };
 
 }

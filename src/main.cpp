@@ -6,6 +6,7 @@ typedef irr::core::vector3df vec3df;
 typedef irr::video::SColor color;
 
 using namespace moster;
+using namespace irr;
 
 namespace moster { namespace irrlicht
 {
@@ -113,18 +114,6 @@ namespace moster { namespace irrlicht
 	void spincam::update(const unsigned int time_delta_msec)
 	{
 		const float ft = static_cast<float>(time_delta_msec);
-		vec3df targetdir = camera_->getTarget() - camera_->getAbsolutePosition();
-		targetdir.normalize();
-		if (controller_.is_active(controller::modifier::MD_FORWARD))
-		{
-			camera_->setPosition(camera_->getPosition() 
-				+ (50.0f * targetdir));
-		}
-		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
-		{
-			camera_->setPosition(camera_->getPosition() 
-				- (50.0f * targetdir));
-		}
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
 			angle_ = angle_ - (spin_ * ft);
@@ -134,6 +123,22 @@ namespace moster { namespace irrlicht
 		{
 			angle_ = angle_ + (spin_ * ft);
 			camera_->setRotation(vec3df(0.0f, angle_, 0.0f));
+		}
+		vec3df targetdir = (camera_->getTarget() - camera_->getAbsolutePosition());
+		targetdir.normalize();
+		if (controller_.is_active(controller::modifier::MD_FORWARD))
+		{
+			camera_->setPosition(camera_->getPosition() 
+				+ (50.0f * targetdir));
+			camera_->setTarget(camera_->getTarget() 
+				+ (50.0f * targetdir));
+		}
+		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
+		{
+			camera_->setPosition(camera_->getPosition() 
+				- (50.0f * targetdir));
+			camera_->setTarget(camera_->getTarget() 
+				- (50.0f * targetdir));
 		}
 	}
 
@@ -226,19 +231,27 @@ namespace moster { namespace irrlicht
 	}
 } }
 
+
 int main(int argc, char ** argv)
 {
-	logger logger(L"main", logger::Info);
-	logger.log(logger::Info, L"hello...");
+	logger logger("main", logger::Info);
+	logger.log(logger::Info, "hello...");
 	
 	if (2 > argc)
 	{
-		logger.log(logger::Error, L"not enough arguments");
+		logger.log(logger::Error, "not enough arguments");
 		return 1;
 	}
-	os::oschar assets_path[128];
-	os::mbstowcs(assets_path, 128, argv[1], strlen(argv[1]));
-	logger.log(logger::Info, L"getting assets from %s", assets_path);
+	
+#ifdef WIN32
+	wchar_t assets_path_w[256];
+	os::mbstowcs(assets_path_w, 256, argv[1], strlen(argv[1]));
+	char assets_path[256];
+	os::wcrtomb(assets_path, 256, assets_path_w, wcslen(assets_path_w));
+#else
+	auto assets_path = argv[1];
+#endif
+	logger.log(logger::Info, "getting assets from %s", assets_path);
 
 	auto driverType = irr::driverChoiceConsole();
 	if (irr::video::EDT_COUNT == driverType)
@@ -252,11 +265,11 @@ int main(int argc, char ** argv)
 	auto device = irr::createDeviceEx(params);
 	if (0 == device)
 	{
-		logger.log(moster::logger::Error, L"unable to create device for driver %d", driverType);
+		logger.log(moster::logger::Error, "unable to create device for driver %d", driverType);
 		return 1; 
 	}
 	device->setWindowCaption(L"moster");
-
+	
 	// setup video driver
 	auto vdrv = device->getVideoDriver();
 
@@ -268,8 +281,8 @@ int main(int argc, char ** argv)
 	irrlicht::spincam spincam(cam);
 	device->setEventReceiver(&(spincam.key_receiver()));
 	
-	auto hmpath = (assetpath(assets_path) << L"heightmap"
-		<< L"grass1-height.png").str();
+	assetpath hmpath(assets_path);
+	hmpath << "heightmap" << "grass1-height.png";
 	auto terrain = smgr->addTerrainSceneNode(
 		hmpath.c_str(),
 		0,					
@@ -283,8 +296,8 @@ int main(int argc, char ** argv)
 		4	
 	);
 
-	auto cmpath = (assetpath(assets_path) << L"colormap"
-		<< L"grass1-color.png").str();
+	assetpath cmpath(assets_path);
+	cmpath << "colormap" << "grass1-color.png";
 	auto cmaptext = vdrv->getTexture(cmpath.c_str());
 	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	terrain->setMaterialTexture(0, cmaptext);
@@ -293,7 +306,7 @@ int main(int argc, char ** argv)
 	terrain->setMaterialType(irr::video::EMT_DETAIL_MAP);
 	
 	const size_t wincapsz = 64;
-	os::oschar wincap[wincapsz];
+	wchar_t wincap[wincapsz];
 	auto last_time = device->getTimer()->getTime();
 	while (device->run())
 	{
@@ -302,8 +315,8 @@ int main(int argc, char ** argv)
 			auto fps = vdrv->getFPS();
 			auto t = device->getTimer()->getTime();
 			auto tdiff = t - last_time;
-			os::wsprintf(wincap, wincapsz, L"moster (%d fps)", fps);
-			device->setWindowCaption(L"moster");
+			os::sprintf<wchar_t>(wincap, wincapsz, L"moster (%d fps)", fps);
+			device->setWindowCaption(wincap);
 			spincam.update(tdiff);
 			vdrv->beginScene(true, true, irr::video::SColor(255, 64, 64, 64));
 			smgr->drawAll();

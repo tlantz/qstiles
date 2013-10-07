@@ -7,12 +7,14 @@
 #include <cstdarg>
 #include <time.h>
 
+using namespace irr;
+
 namespace moster
 {
 
     namespace logger_impl
     {
-		os::osstr timestamp(os::osstr buffer)
+		c8 * timestamp(c8 * buffer)
         {
             time_t t = time(NULL);
             struct tm * mptr;
@@ -26,35 +28,35 @@ namespace moster
 #else
             mptr = localtime(&t);
 #endif
-            wcsftime(buffer, MOSTER_LOGGER_BUFFSIZE, L"%d%b%y %H:%M:%S", mptr);
+            strftime(buffer, MOSTER_LOGGER_BUFFSIZE, "%d%b%y %H:%M:%S", mptr);
             return buffer;
         }
 
-        os::osstr level2str(const logger::log_level level)
+        c8 * level2str(const logger::log_level level)
         {
             switch (level)
             {
                 case logger::Debug:
-                    return L"DEBUG";
+                    return "DEBUG";
                 case logger::Info:
-                    return L"INFO";
+                    return "INFO";
                 case logger::Warn:
-                    return L"WARN";
+                    return "WARN";
                 case logger::Error:
-                    return L"ERROR";
+                    return "ERROR";
                 default:
-                    return L"BLEH";
+                    return "BLEH";
             }
         }
     }
 
-    logger::logger(os::osstr name, const logger::log_level level) :
+    logger::logger(c8 * name, const logger::log_level level) :
         level_(level)
     {
 #ifdef _MSC_VER
-		wcscpy_s(name_, MOSTER_LOGGER_MAXNAME_LEN - 1, name);
+		strcpy_s(name_, MOSTER_LOGGER_MAXNAME_LEN - 1, name);
 #else
-        wstrncpy(name_, name, MOSTER_LOGGER_MAXNAME_LEN - 1);
+        strncpy(name_, name, MOSTER_LOGGER_MAXNAME_LEN - 1);
 #endif
         name_[MOSTER_LOGGER_MAXNAME_LEN - 1] = '\0';
     }
@@ -63,13 +65,13 @@ namespace moster
 
     void logger::level(const logger::log_level level) { level_ = level; }
 
-	void logger::log(const logger::log_level level, os::osstr format, ...)
+	void logger::log(const logger::log_level level, c8 * format, ...)
     {
-        wprintf(L"%s %-6s ", logger_impl::timestamp(buffer_),
+        printf("%s %-6s ", logger_impl::timestamp(buffer_),
             logger_impl::level2str(level));
         va_list arguments;
         va_start(arguments, format);
-        vwprintf(format, arguments);
+        vprintf(format, arguments);
         va_end(arguments);
         wprintf(L"\n");
     }

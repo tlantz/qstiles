@@ -1,24 +1,20 @@
 #ifndef MOSTER_OS_HPP_
 #define MOSTER_OS_HPP_
 
-#include <string>
+#include <irrTypes.h>
 
 namespace moster { namespace os
-{
-	typedef wchar_t oschar;
-	typedef wchar_t * osstr;
-	typedef std::wstring string;
-	typedef std::wstringstream stringstream;
+{	
+	size_t mbstowcs(wchar_t * dest, size_t destsz, const irr::c8 * src, size_t srcsize);
 
-	const char * pathsep();
+	size_t wcrtomb(irr::c8 * dest, size_t destsz, const wchar_t * src, size_t srcsize);
 
-	const osstr wpathsep();
-	
-	size_t mbstowcs(osstr dest, size_t destsz, const char * src, size_t srcsize);
+	const irr::c8 * pathsep();
 
-	size_t strlen(const char * str);
+	size_t strlen(irr::c8 * str);
 
-	size_t wsprintf(osstr dest, size_t size, const osstr format, ...);
+	template <typename c_t>
+	size_t sprintf(c_t * dest, size_t size, const c_t * format, ...);
 
 } }
 

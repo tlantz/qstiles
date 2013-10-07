@@ -87,11 +87,13 @@
   <ItemGroup>
     <ClInclude Include="..\include\moster\assetpath.hpp" />
     <ClInclude Include="..\include\moster\core.hpp" />
+    <ClInclude Include="..\include\moster\diagnostics.hpp" />
     <ClInclude Include="..\include\moster\logger.hpp" />
     <ClInclude Include="..\include\moster\os.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assetpath.cpp" />
+    <ClCompile Include="diagnostics.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />

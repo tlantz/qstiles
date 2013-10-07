@@ -1,28 +1,24 @@
 #include <moster/assetpath.hpp>
+#include <moster/os.hpp>
+
+using namespace irr;
 
 namespace moster
 {
-	assetpath::assetpath(const os::string & root)
+	assetpath::assetpath(const fschar_t * root)
 	{
-		if (root.empty())
-		{
-			path_ << os::pathsep();
-		}
-		else
-		{
-			path_ << root;
-		}
+		path_ << root;
 	}
 
-	assetpath & assetpath::operator<<(const os::string & part)
+	assetpath & assetpath::operator<<(const fschar_t * part)
 	{
 		path_ << os::pathsep() << part;
 		return *this;
 	}
 
-	os::string assetpath::str() const
+	const fschar_t * assetpath::c_str() 
 	{
-		return path_.str();
+		buff_ = path_.str();
+		return buff_.c_str();
 	}
-
 }
