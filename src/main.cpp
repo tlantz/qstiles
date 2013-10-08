@@ -98,7 +98,7 @@ namespace moster { namespace irrlicht
 		angle_(0.0f),
 		camera_(camera),
 		controller_(),
-		height_(75.0f),
+		height_(60.0f),
 		look_distance_(30.0f),
 		receiver_(this->controller_),
 		spin_(0.05f),
@@ -127,7 +127,7 @@ namespace moster { namespace irrlicht
 		}
 		auto targetdir = vec3df(0.0f, 0.0f, 1.0f);
 		targetdir.normalize();
-		targetdir.rotateXYBy(75.0f);
+		targetdir.rotateXYBy(60.0f);
 		targetdir.rotateXZBy(angle_);
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
