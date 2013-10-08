@@ -101,7 +101,7 @@ namespace moster { namespace irrlicht
 		height_(75.0f),
 		look_distance_(30.0f),
 		receiver_(this->controller_),
-		spin_(0.25f),
+		spin_(0.05f),
 		track_speed_(track_speed)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
@@ -119,26 +119,29 @@ namespace moster { namespace irrlicht
 		const auto ft = static_cast<float>(time_delta_msec);
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
-			angle_ = angle_ - (spin_ * ft);
+			angle_ = angle_ + (spin_ * ft);
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
 		{
-			angle_ = angle_ + (spin_ * ft);
+			angle_ = angle_ - (spin_ * ft);
 		}
 		auto targetdir = vec3df(0.0f, 0.0f, 1.0f);
 		targetdir.normalize();
-		targetdir.rotateXYBy(80.0f);
+		targetdir.rotateXYBy(75.0f);
 		targetdir.rotateXZBy(angle_);
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				+ (track_speed_ * ft * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				+ (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z)));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				- (track_speed_ * ft * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				- (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z)));
 		}
+		auto pos = camera_->getPosition();
+		camera_->setTarget(vec3df(pos.X, 0.0f, pos.Z)
+			+ (look_distance_ * vec3df(targetdir.X, 0.0f, targetdir.Z)));
 	}
 
 	spincam::controller::controller() :
