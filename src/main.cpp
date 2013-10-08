@@ -85,7 +85,7 @@ namespace moster { namespace irrlicht
 
 	public:
 
-		spincam(irr::scene::ICameraSceneNode * camera, f32 track_speed = 10.0f);
+		spincam(irr::scene::ICameraSceneNode * camera, f32 track_speed = 0.05f);
 
 		receiver & key_receiver();
 
@@ -98,13 +98,14 @@ namespace moster { namespace irrlicht
 		angle_(0.0f),
 		camera_(camera),
 		controller_(),
-		height_(15000.0f),
-		look_distance_(200.0f),
+		height_(75.0f),
+		look_distance_(30.0f),
 		receiver_(this->controller_),
 		spin_(0.25f),
 		track_speed_(track_speed)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
+		
 		camera_->setTarget(vec3df(look_distance_, 0.0f, look_distance_));
 	}
 
@@ -133,16 +134,16 @@ namespace moster { namespace irrlicht
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				+ (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				+ (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 			camera_->setTarget(camera_->getTarget() 
-				+ (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				+ (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				- (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				- (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 			camera_->setTarget(camera_->getTarget() 
-				- (10.0f * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				- (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
 		}
 	}
 
@@ -280,7 +281,7 @@ int main(int argc, char ** argv)
 	// setup scene graph
 	auto smgr = device->getSceneManager();
 	auto cam = smgr->addCameraSceneNode();
-	cam->setFarValue(60000.0f);
+	cam->setFarValue(1000.0f);
 
 	irrlicht::spincam spincam(cam);
 	device->setEventReceiver(&(spincam.key_receiver()));
