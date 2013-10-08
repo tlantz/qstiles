@@ -98,15 +98,14 @@ namespace moster { namespace irrlicht
 		angle_(0.0f),
 		camera_(camera),
 		controller_(),
-		height_(60.0f),
+		height_(80.0f),
 		look_distance_(30.0f),
 		receiver_(this->controller_),
 		spin_(0.05f),
 		track_speed_(track_speed)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
-		
-		camera_->setTarget(vec3df(look_distance_, 0.0f, look_distance_));
+		update(0u);
 	}
 
 	spincam::receiver & spincam::key_receiver()
