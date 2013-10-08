@@ -74,18 +74,21 @@ namespace moster { namespace irrlicht
 		
 	private:
 
-		f32 angle_;
+		irr::f32 angle_;
 		irr::scene::ICameraSceneNode * camera_;
 		controller controller_;
-		f32 height_;
-		f32 look_distance_;
+		irr::f32 height_;
+		irr::f32 look_distance_;
 		receiver receiver_;
-		const f32 spin_;
-		const f32 track_speed_;
+		const irr::f32 spin_;
+		irr::scene::ITerrainSceneNode * terrain_;
+		const irr::f32 track_speed_;
 
 	public:
 
-		spincam(irr::scene::ICameraSceneNode * camera, f32 track_speed = 0.05f);
+		spincam(irr::scene::ICameraSceneNode * camera, 
+			irr::scene::ITerrainSceneNode * terrain, 
+			irr::f32 track_speed = 0.05f);
 
 		receiver & key_receiver();
 
@@ -93,15 +96,16 @@ namespace moster { namespace irrlicht
 		
 	};
 
-	spincam::spincam(irr::scene::ICameraSceneNode * camera, 
-			f32 track_speed) :
+	spincam::spincam(scene::ICameraSceneNode * camera, 
+			scene::ITerrainSceneNode * terrain, f32 track_speed) :
 		angle_(0.0f),
 		camera_(camera),
 		controller_(),
-		height_(80.0f),
+		height_(40.0f),
 		look_distance_(30.0f),
 		receiver_(this->controller_),
 		spin_(0.05f),
+		terrain_(terrain),
 		track_speed_(track_speed)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
@@ -128,17 +132,17 @@ namespace moster { namespace irrlicht
 		targetdir.normalize();
 		targetdir.rotateXYBy(60.0f);
 		targetdir.rotateXZBy(angle_);
+		auto pos = camera_->getPosition();
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
-		{
-			camera_->setPosition(camera_->getPosition() 
-				+ (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z)));
+		{ 
+			pos += (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
-		{
-			camera_->setPosition(camera_->getPosition() 
-				- (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z)));
+		{ 
+			pos	-= (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z));
 		}
-		auto pos = camera_->getPosition();
+		pos.Y = height_ + terrain_->getHeight(pos.X, pos.Y);
+		camera_->setPosition(pos);
 		camera_->setTarget(vec3df(pos.X, 0.0f, pos.Z)
 			+ (look_distance_ * vec3df(targetdir.X, 0.0f, targetdir.Z)));
 	}
@@ -279,9 +283,6 @@ int main(int argc, char ** argv)
 	auto cam = smgr->addCameraSceneNode();
 	cam->setFarValue(1000.0f);
 
-	irrlicht::spincam spincam(cam);
-	device->setEventReceiver(&(spincam.key_receiver()));
-	
 	assetpath hmpath(assets_path);
 	hmpath << "heightmap" << "grass1-height.png";
 	auto terrain = smgr->addTerrainSceneNode(
@@ -290,12 +291,15 @@ int main(int argc, char ** argv)
 		-1,
 		vec3df(-256.0f, 0.f, -256.0f),		
 		vec3df(0.f, 0.f, 0.f),
-		vec3df(1.0f, 0.25f, 1.0f),	
+		vec3df(1.0f, 0.5f, 1.0f),	
 		irr::video::SColor(255, 255, 255, 255),
 		5,
 		irr::scene::ETPS_17,
 		4	
 	);
+
+	irrlicht::spincam spincam(cam, terrain);
+	device->setEventReceiver(&(spincam.key_receiver()));
 
 	assetpath cmpath(assets_path);
 	cmpath << "colormap" << "grass1-color.png";
@@ -305,7 +309,7 @@ int main(int argc, char ** argv)
 	terrain->setMaterialTexture(1, cmaptext);
 	terrain->scaleTexture(1.0f, 1.0f);
 	terrain->setMaterialType(irr::video::EMT_DETAIL_MAP);
-	
+
 	const size_t wincapsz = 64;
 	wchar_t wincap[wincapsz];
 	auto last_time = device->getTimer()->getTime();
