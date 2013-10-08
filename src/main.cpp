@@ -119,31 +119,25 @@ namespace moster { namespace irrlicht
 		const auto ft = static_cast<float>(time_delta_msec);
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
-			const auto r = camera_->getRotation();
 			angle_ = angle_ - (spin_ * ft);
-			camera_->setRotation(vec3df(r.X, angle_, r.Z));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
 		{
-			const auto r = camera_->getRotation();
 			angle_ = angle_ + (spin_ * ft);
-			camera_->setRotation(vec3df(r.X, angle_, r.Z));
 		}
-		vec3df targetdir = (camera_->getTarget() - camera_->getAbsolutePosition());
+		auto targetdir = vec3df(0.0f, 0.0f, 1.0f);
 		targetdir.normalize();
+		targetdir.rotateXYBy(80.0f);
+		targetdir.rotateXZBy(angle_);
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				+ (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
-			camera_->setTarget(camera_->getTarget() 
-				+ (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				+ (track_speed_ * ft * vec3df(targetdir.X, 0.0, targetdir.Z)));
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_BACKWARD))
 		{
 			camera_->setPosition(camera_->getPosition() 
-				- (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
-			camera_->setTarget(camera_->getTarget() 
-				- (track_speed_ * time_delta_msec * vec3df(targetdir.X, 0.0, targetdir.Z)));
+				- (track_speed_ * ft * vec3df(targetdir.X, 0.0, targetdir.Z)));
 		}
 	}
 
@@ -292,7 +286,7 @@ int main(int argc, char ** argv)
 		hmpath.c_str(),
 		0,					
 		-1,
-		vec3df(-0.5f, 0.f, -0.5f),		
+		vec3df(-256.0f, 0.f, -256.0f),		
 		vec3df(0.f, 0.f, 0.f),
 		vec3df(1.0f, 0.25f, 1.0f),	
 		irr::video::SColor(255, 255, 255, 255),
