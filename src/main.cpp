@@ -10,6 +10,39 @@ using namespace irr;
 
 namespace moster { namespace irrlicht
 {
+	class wanderer
+	{
+	private:
+
+		irr::scene::ISceneNode * node_;
+		irr::scene::ITerrainSceneNode * terrain_;
+
+	public:
+
+		wanderer(irr::scene::ISceneNode * node, 
+			irr::scene::ITerrainSceneNode * terrain);
+
+		void update(const u32 time_delta_msec);
+	};
+
+	wanderer::wanderer(scene::ISceneNode * node, 
+			irr::scene::ITerrainSceneNode * terrain) :
+		node_(node),
+		terrain_(terrain)
+	{ }
+
+	void wanderer::update(const u32 time_delta_msec)
+	{
+		auto ft = static_cast<float>(time_delta_msec);
+		auto pos = node_->getPosition();
+		auto r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+		pos.X += (r - 0.5f) * ft * 0.1f;
+		r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+		pos.Z += (r - 0.5f) * ft * 0.1f;
+		pos.Y = 2.0f + terrain_->getHeight(pos.X, pos.Z);
+		node_->setPosition(pos);
+	}
+
 	class spincam
 	{
 	private:
@@ -101,8 +134,8 @@ namespace moster { namespace irrlicht
 		angle_(0.0f),
 		camera_(camera),
 		controller_(),
-		height_(40.0f),
-		look_distance_(30.0f),
+		height_(60.0f),
+		look_distance_(40.0f),
 		receiver_(this->controller_),
 		spin_(0.05f),
 		terrain_(terrain),
@@ -130,7 +163,7 @@ namespace moster { namespace irrlicht
 		}
 		auto targetdir = vec3df(0.0f, 0.0f, 1.0f);
 		targetdir.normalize();
-		targetdir.rotateXYBy(60.0f);
+		targetdir.rotateXYBy(45.0f);
 		targetdir.rotateXZBy(angle_);
 		auto pos = camera_->getPosition();
 		if (controller_.is_active(controller::modifier::MD_FORWARD))
@@ -141,7 +174,7 @@ namespace moster { namespace irrlicht
 		{ 
 			pos	-= (track_speed_ * ft * vec3df(targetdir.X, 0.0f, targetdir.Z));
 		}
-		pos.Y = height_ + terrain_->getHeight(pos.X, pos.Y);
+		pos.Y = height_ + terrain_->getHeight(pos.X, pos.Z);
 		camera_->setPosition(pos);
 		camera_->setTarget(vec3df(pos.X, 0.0f, pos.Z)
 			+ (look_distance_ * vec3df(targetdir.X, 0.0f, targetdir.Z)));
@@ -267,6 +300,8 @@ int main(int argc, char ** argv)
 	// setup device
 	irr::SIrrlichtCreationParameters params;
 	params.DriverType = driverType;
+	params.AntiAlias = 1;
+	params.WindowSize = core::dimension2d<u32>(1024, 768);
 	auto device = irr::createDeviceEx(params);
 	if (0 == device)
 	{
@@ -281,7 +316,7 @@ int main(int argc, char ** argv)
 	// setup scene graph
 	auto smgr = device->getSceneManager();
 	auto cam = smgr->addCameraSceneNode();
-	cam->setFarValue(1000.0f);
+	cam->setFarValue(200.0f);
 
 	assetpath hmpath(assets_path);
 	hmpath << "heightmap" << "grass1-height.png";
@@ -291,12 +326,15 @@ int main(int argc, char ** argv)
 		-1,
 		vec3df(-256.0f, 0.f, -256.0f),		
 		vec3df(0.f, 0.f, 0.f),
-		vec3df(1.0f, 0.5f, 1.0f),	
-		irr::video::SColor(255, 255, 255, 255),
-		5,
-		irr::scene::ETPS_17,
-		4	
+		vec3df(1.0f, 0.5f, 1.0f),
+		video::SColor(255,255,255,255),
+		4,
+		scene::ETPS_9,
+		5
 	);
+	auto cube = smgr->addCubeSceneNode(1.0f);
+	irrlicht::wanderer wanderer(cube, terrain);
+	wanderer.update(0u);
 
 	irrlicht::spincam spincam(cam, terrain);
 	device->setEventReceiver(&(spincam.key_receiver()));
@@ -323,6 +361,7 @@ int main(int argc, char ** argv)
 			os::sprintf<wchar_t>(wincap, wincapsz, L"moster (%d fps)", fps);
 			device->setWindowCaption(wincap);
 			spincam.update(tdiff);
+			wanderer.update(tdiff);
 			vdrv->beginScene(true, true, irr::video::SColor(255, 64, 64, 64));
 			smgr->drawAll();
 			vdrv->endScene();
