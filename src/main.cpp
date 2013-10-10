@@ -107,6 +107,10 @@ namespace moster { namespace irrlicht
 		
 	private:
 
+		const irr::f32 max_height_;
+		const irr::f32 min_height_;
+		const irr::f32 zoom_speed_;
+
 		irr::f32 angle_;
 		irr::scene::ICameraSceneNode * camera_;
 		controller controller_;
@@ -139,7 +143,10 @@ namespace moster { namespace irrlicht
 		receiver_(this->controller_),
 		spin_(0.05f),
 		terrain_(terrain),
-		track_speed_(track_speed)
+		track_speed_(track_speed),
+		max_height_(100.0f),
+		min_height_(40.0f),
+		zoom_speed_(0.05f)
 	{ 
 		camera_->setPosition(vec3df(0.0f, height_, 0.0f));
 		update(0u);
@@ -153,13 +160,21 @@ namespace moster { namespace irrlicht
 	void spincam::update(const unsigned int time_delta_msec)
 	{
 		const auto ft = static_cast<float>(time_delta_msec);
+		if (controller_.is_active(controller::modifier::MD_ZOOMIN))
+		{
+			height_ -= zoom_speed_ * ft;
+		}
+		else if (controller_.is_active(controller::cmodifier::MD_ZOOMOUT))
+		{
+			height_ += zoom_speed_ * ft;
+		}
 		if (controller_.is_active(controller::modifier::MD_SPINLEFT))
 		{
-			angle_ = angle_ + (spin_ * ft);
+			angle_ += spin_ * ft;
 		}
 		else if (controller_.is_active(controller::cmodifier::MD_SPINRIGHT))
 		{
-			angle_ = angle_ - (spin_ * ft);
+			angle_ -= spin_ * ft;
 		}
 		auto targetdir = vec3df(0.0f, 0.0f, 1.0f);
 		targetdir.normalize();
@@ -339,14 +354,16 @@ int main(int argc, char ** argv)
 	irrlicht::spincam spincam(cam, terrain);
 	device->setEventReceiver(&(spincam.key_receiver()));
 
+	auto light = smgr->addLightSceneNode();
+	light->setPosition(vec3df(0.0f, 100.0f, 0.0f));
+	light->setLightType(video::E_LIGHT_TYPE::ELT_POINT);
+
 	assetpath cmpath(assets_path);
 	cmpath << "colormap" << "grass1-color.png";
 	auto cmaptext = vdrv->getTexture(cmpath.c_str());
-	terrain->setMaterialFlag(irr::video::EMF_LIGHTING, false);
 	terrain->setMaterialTexture(0, cmaptext);
-	terrain->setMaterialTexture(1, cmaptext);
 	terrain->scaleTexture(1.0f, 1.0f);
-	terrain->setMaterialType(irr::video::EMT_DETAIL_MAP);
+	terrain->setMaterialType(irr::video::EMT_SOLID);
 
 	const size_t wincapsz = 64;
 	wchar_t wincap[wincapsz];
