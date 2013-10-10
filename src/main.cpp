@@ -1,6 +1,7 @@
 #include <moster/core.hpp>
 #include <irrlicht.h>
 #include <driverChoice.h>
+#include <vector>
 
 typedef irr::core::vector3df vec3df;
 typedef irr::video::SColor color;
@@ -347,16 +348,22 @@ int main(int argc, char ** argv)
 		scene::ETPS_9,
 		5
 	);
-	auto cube = smgr->addCubeSceneNode(1.0f);
-	irrlicht::wanderer wanderer(cube, terrain);
-	wanderer.update(0u);
+
+	std::vector<irrlicht::wanderer *> wanderers;
+	for (int i = 0; i < 1000; i++)
+	{
+		auto c = smgr->addSphereSceneNode(1.0);
+		c->getMaterial(0).DiffuseColor.set(255, 255, 0, 0);
+		c->getMaterial(0).PointCloud = true;
+		auto w = new irrlicht::wanderer(c, terrain);
+		w->update(0u);
+		wanderers.push_back(w);
+	}
 
 	irrlicht::spincam spincam(cam, terrain);
 	device->setEventReceiver(&(spincam.key_receiver()));
 
-	auto light = smgr->addLightSceneNode();
-	light->setPosition(vec3df(0.0f, 100.0f, 0.0f));
-	light->setLightType(video::E_LIGHT_TYPE::ELT_POINT);
+	smgr->setAmbientLight(video::SColorf(0.75, 0.75, 0.75));
 
 	assetpath cmpath(assets_path);
 	cmpath << "colormap" << "grass1-color.png";
@@ -378,7 +385,10 @@ int main(int argc, char ** argv)
 			os::sprintf<wchar_t>(wincap, wincapsz, L"moster (%d fps)", fps);
 			device->setWindowCaption(wincap);
 			spincam.update(tdiff);
-			wanderer.update(tdiff);
+			for (unsigned int i = 0; i < wanderers.size(); i++)
+			{
+				wanderers[i]->update(tdiff);
+			}
 			vdrv->beginScene(true, true, irr::video::SColor(255, 64, 64, 64));
 			smgr->drawAll();
 			vdrv->endScene();
